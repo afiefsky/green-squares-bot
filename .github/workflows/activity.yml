@@ -30,6 +30,14 @@ jobs:
         with:
           fetch-depth: 0  # Important for rebase and push
           token: ${{ secrets.BOT_PAT }}
+          persist-credentials: false
+
+      - name: Configure git auth with BOT_PAT
+        env:
+          BOT_PAT: ${{ secrets.BOT_PAT }}
+        run: |
+          git config --local --unset-all credential.helper || true
+          git remote set-url origin "https://x-access-token:${BOT_PAT}@github.com/${{ github.repository }}.git"
 
       - name: Set up Git identity as afiefsky
         run: |
@@ -60,13 +68,14 @@ jobs:
         env:
           BOT_PAT: ${{ secrets.BOT_PAT }}
         run: |
+          git config --local --unset-all credential.helper || true
           git remote set-url origin "https://x-access-token:${BOT_PAT}@github.com/${{ github.repository }}.git"
-          git pull origin main --rebase
+          git -c credential.helper= pull origin main --rebase
           AHEAD=$(git rev-list --count origin/main..HEAD)
           echo "Local branch is ahead by $AHEAD commit(s)."
           if [ $AHEAD -gt 0 ]; then
             echo "🔄 Changes detected. Pushing..."
-            git push origin main
+            git -c credential.helper= push origin main
           else
             echo "✅ No new commits to push."
           fi
