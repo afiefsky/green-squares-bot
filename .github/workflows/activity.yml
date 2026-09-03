@@ -14,17 +14,22 @@ jobs:
   commit:
     runs-on: ubuntu-latest
     steps:
+      - name: Verify BOT_PAT secret is configured
+        env:
+          BOT_PAT: ${{ secrets.BOT_PAT }}
+        run: |
+          if [ -z "$BOT_PAT" ]; then
+            echo "::error::Missing repository secret BOT_PAT."
+            echo "Create a fine-grained PAT with Contents read/write for this repo,"
+            echo "then add it at Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Important for rebase and push
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure authenticated remote
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          token: ${{ secrets.BOT_PAT }}
 
       - name: Set up Git identity as afiefsky
         run: |
@@ -51,12 +56,12 @@ jobs:
             echo "✅ No local changes to stage."
           fi
 
-      - name: Pull latest changes before pushing
+      - name: Pull and push changes
+        env:
+          BOT_PAT: ${{ secrets.BOT_PAT }}
         run: |
+          git remote set-url origin "https://x-access-token:${BOT_PAT}@github.com/${{ github.repository }}.git"
           git pull origin main --rebase
-
-      - name: Push if commits are ahead
-        run: |
           AHEAD=$(git rev-list --count origin/main..HEAD)
           echo "Local branch is ahead by $AHEAD commit(s)."
           if [ $AHEAD -gt 0 ]; then
