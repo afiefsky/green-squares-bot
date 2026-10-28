@@ -862,3 +862,4 @@
 [2026-10-27 05:21:23 PM] Small steps every day.
 [2026-10-28 11:44:19 PM] Small steps every day.
 [2026-10-28 11:44:19 PM] Don’t break the streak — commit today!
+[2026-10-28 11:44:19 PM] Consistency is more important than intensity.
